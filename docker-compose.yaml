@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  web:
+    container_name: "web_books"
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5438/book_store
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    container_name: "db_books"
+    image: postgres:17
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=book_store
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+
+
+
+
