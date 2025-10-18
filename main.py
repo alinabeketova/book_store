@@ -10,13 +10,9 @@ def read_root():
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    if "PORT" in os.environ:
-        port = int(os.getenv("PORT"))
-    elif os.name == 'nt':
+    if os.name == 'nt':
         port = 8001
     else:
         port = 8000
 
-    uvicorn.run("main:app", port=port, host="127.0.0.1", reload=True)
+    uvicorn.run("main:app", port=port, host="0.0.0.0", reload=True)
