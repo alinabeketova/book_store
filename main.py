@@ -3,6 +3,10 @@ import os
 import uvicorn
 from fastapi import FastAPI
 
+from settings.settings import get_settings
+
+settings = get_settings()
+
 app = FastAPI()
 
 
@@ -12,5 +16,5 @@ def read_root() -> dict:
 
 
 if __name__ == "__main__":
-    port = 8001 if os.name == "nt" else 8000
+    port = settings.port_local if os.name == "nt" else settings.port_docker
     uvicorn.run("main:app", port=port, host="0.0.0.0", reload=True)
