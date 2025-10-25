@@ -31,6 +31,7 @@ lint.ignore = [
     "ERA001",    # Found commented-out code
     "FA100",     # Missing from __future__ import annotations, but uses {name}
     "FA102",     # Missing from __future__ import annotations, but uses {reason}
+    "FAST002",   # FastAPI dependency without `Annotated`
     "PLW2901",   # Outer {outer_kind} variable {name} overwritten by inner {inner_kind} target
     "N805",      # First argument of a method should be named self
     "RUF001",    # String contains ambiguous {}. Did you mean {}?
@@ -65,7 +66,8 @@ exclude = [
     "node_modules",
     "modules",
     "settings",
-    "tests"
+    "tests",
+    "exception_handler.py"
 ]
 
 [tool.ruff.lint.flake8-bugbear]

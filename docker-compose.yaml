@@ -5,8 +5,6 @@ services:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5438/book_store
     depends_on:
       - db
     volumes:
