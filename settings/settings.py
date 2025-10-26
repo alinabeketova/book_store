@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     db_port_docker: int = Field(int(os.getenv("DB_PORT_DOCKER")), validate_default=False)
     db_url: str = Field(os.getenv("DB_URL"), validate_default=False)
     db_url_async: str = Field(os.getenv("DB_URL_ASYNC"), validate_default=False)
+    access_token_expire_minutes: int =  Field(int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")), validate_default=False)
+    refresh_token_expire_minutes: int =  Field(int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")), validate_default=False)
+    jwt_secret_key: str = Field(os.getenv("JWT_SECRET_KEY"), validate_default=False)
+    jwt_refresh_secret_key: str = Field(os.getenv("JWT_REFRESH_SECRET_KEY"), validate_default=False)
     workers: int = Field(int(os.getenv("WORKERS")), validate_default=False)
 
 @lru_cache
