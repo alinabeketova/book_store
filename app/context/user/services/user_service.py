@@ -57,3 +57,6 @@ class UserService:
         await self.repository.update_partly(user, email=user.email)
 
         return UserResponse(message="Пользователь обновлен частично")
+
+    async def get_user_by_count_role(self: "UserService", count: int) -> list[UserDTO]:
+        return await self.repository.get_user_by_count_role(count)

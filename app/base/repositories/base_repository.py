@@ -45,7 +45,7 @@ class BaseRepository(GenericRepository[CreateDTOType, UpdateDTOType, DTOType]):
             msg = f"Запись в таблице {self.model.__tablename__} не найдена"
             raise HTTPException(status_code=404, detail=msg) from e
 
-    async def get_multi(self: "BaseRepository", **filters: dict) -> list[DTOType]:
+    async def get_multi(self: "BaseRepository", **filters: Any) -> list[DTOType]:  # noqa: ANN401
         stmt = select(self.model).filter_by(**filters)
         res = await self._session.execute(stmt)
         return self._get_multi_dto(res.scalars())
