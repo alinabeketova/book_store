@@ -48,3 +48,9 @@ async def update_user(service: IUserService, data: UpdateUserDTO = Depends()) ->
 @error_handler
 async def update_partly_user(service: IUserService, data: UpdatePartlyUserDTO = Depends()) -> UserResponse:
     return await service.update_partly_user(data=data)
+
+
+@router_user.get("/user_role", summary="Get user by count role", dependencies=[Depends(JWTBearer())])
+@error_handler
+async def get_user_by_count_role(service: IUserService, count: int) -> list[UserDTO]:
+    return await service.get_user_by_count_role(count=count)
