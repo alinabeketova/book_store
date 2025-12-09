@@ -25,3 +25,15 @@ class LoginRequestDTO(Base):
 
 class LoginResponseDTO(Base):
     token: str
+
+
+class LoginUriDTO(Base):
+    uri: str
+
+
+class GoogleTokenResponse(Base):
+    success: bool
+    access_token: str | None = None
+    refresh_token: str | None = None
+    expires_in: int | None = None
+    id_token: str | None = None
