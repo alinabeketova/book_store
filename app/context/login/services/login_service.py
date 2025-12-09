@@ -1,9 +1,17 @@
-from fastapi import HTTPException
+import os
+import urllib.parse
+from http import HTTPStatus
+from typing import Any
 
+import aiohttp
+from fastapi import HTTPException, Request
+
+from app.auth.oauth_google import generate_google_oauth_redirect_uri
 from app.auth.utils import create_access_token
 from app.base.utils.password_utils import get_hashed_password
 from app.context.login.dependencies.repositories import ILoginRepository
-from app.context.login.schemas.login_schema import LoginRequestDTO, LoginResponseDTO
+from app.context.login.schemas.login_schema import GoogleTokenResponse, LoginRequestDTO, LoginResponseDTO, LoginUriDTO
+from settings.settings import get_settings
 
 
 class LoginService:
@@ -20,3 +28,74 @@ class LoginService:
             HTTPException(status_code=404, detail="Неверный email или пароль")
 
         return LoginResponseDTO(token=create_access_token(data.email))
+
+    async def get_google_oauth_redirect_uri(self: "LoginService") -> LoginUriDTO:
+        uri = generate_google_oauth_redirect_uri()
+        return LoginUriDTO(uri=uri)
+
+    async def get_google_callback(self: "LoginService", request: Request) -> GoogleTokenResponse:
+        code = request.query_params.get("code")
+        error = request.query_params.get("error")
+
+        if error:
+            raise HTTPException(status_code=400, detail=f"Google error: {error}")
+
+        if not code:
+            raise HTTPException(status_code=400, detail="No authorization code")
+
+        code = urllib.parse.unquote(code)
+
+        token_data = await self.exchange_code_for_token(code)
+
+        return GoogleTokenResponse(
+            success=True,
+            access_token=token_data.get("access_token"),
+            refresh_token=token_data.get("refresh_token"),
+            expires_in=token_data.get("expires_in"),
+            id_token=token_data.get("id_token"),
+        )
+
+    async def exchange_code_for_token(self: "LoginService", code: str) -> dict[str, Any]:
+        settings = get_settings()
+
+        redirect_uri = "http://127.0.0.1:8001/login/google" if os.name == "nt" else "http://127.0.0.1:8000/login/google"
+
+        token_data = {
+            "code": code,
+            "client_id": settings.OAUTH_GOOGLE_CLIENT_ID,
+            "client_secret": settings.OAUTH_GOOGLE_CLIENT_SECRET,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        }
+
+        def raise_http_exception(status_code: int, detail: str) -> None:
+            raise HTTPException(status_code=status_code, detail=detail)
+
+        try:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.post(
+                    url="https://oauth2.googleapis.com/token",
+                    data=token_data,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                ) as response,
+            ):
+                if response.status != HTTPStatus.OK:
+                    try:
+                        error_data = await response.json()
+                        error_msg = error_data.get("error_description", error_data.get("error", "Unknown"))
+                        raise_http_exception(400, f"Google OAuth error: {error_msg}")
+                    except aiohttp.ContentTypeError:
+                        text = await response.text()
+                        raise_http_exception(400, f"Invalid response format from Google: {text[:100]}")
+                    except Exception as e:
+                        raise_http_exception(400, f"Failed to exchange code: {e!s}")
+
+                return await response.json()
+
+        except aiohttp.ClientError as e:
+            raise HTTPException(status_code=503, detail="Google OAuth service unavailable") from e
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}") from e
