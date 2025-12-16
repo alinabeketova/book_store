@@ -26,9 +26,14 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(os.getenv("JWT_SECRET_KEY"), validate_default=False)
     jwt_refresh_secret_key: str = Field(os.getenv("JWT_REFRESH_SECRET_KEY"), validate_default=False)
     workers: int = Field(int(os.getenv("WORKERS")), validate_default=False)
-
-    OAUTH_GOOGLE_CLIENT_SECRET: str = Field(os.getenv("oauth_google_client_secret"), validate_default=False)
-    OAUTH_GOOGLE_CLIENT_ID: str = Field(os.getenv("oauth_google_client_id"), validate_default=False)
+    oauth_google_client_secret: str = Field(os.getenv("OAUTH_GOOGLE_CLIENT_SECRET"), validate_default=False)
+    oauth_google_client_id: str = Field(os.getenv("OAUTH_GOOGLE_CLIENT_ID"), validate_default=False)
+    redirect_uri_local: str = Field(os.getenv("REDIRECT_URI_LOCAL"), validate_default=False)
+    redirect_uri_docker: str = Field(os.getenv("REDIRECT_URI_DOCKER"), validate_default=False)
+    base_url_google: str = Field(os.getenv("BASE_URL_GOOGLE"), validate_default=False)
+    token_info_url: str = Field(os.getenv("TOKEN_INFO_URL"), validate_default=False)
+    user_info_url: str = Field(os.getenv("USER_INFO_URL"), validate_default=False)
+    token_google_url: str = Field(os.getenv("TOKEN_GOOGLE_URL"), validate_default=False)
 
 @lru_cache
 def get_settings() -> Settings:

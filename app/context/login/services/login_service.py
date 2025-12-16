@@ -58,12 +58,12 @@ class LoginService:
     async def exchange_code_for_token(self: "LoginService", code: str) -> dict[str, Any]:
         settings = get_settings()
 
-        redirect_uri = "http://127.0.0.1:8001/login/google" if os.name == "nt" else "http://127.0.0.1:8000/login/google"
+        redirect_uri = settings.redirect_uri_local if os.name == "nt" else settings.redirect_uri_docker
 
         token_data = {
             "code": code,
-            "client_id": settings.OAUTH_GOOGLE_CLIENT_ID,
-            "client_secret": settings.OAUTH_GOOGLE_CLIENT_SECRET,
+            "client_id": settings.oauth_google_client_id,
+            "client_secret": settings.oauth_google_client_secret,
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code",
         }
@@ -75,7 +75,7 @@ class LoginService:
             async with (
                 aiohttp.ClientSession() as session,
                 session.post(
-                    url="https://oauth2.googleapis.com/token",
+                    url=settings.token_google_url,
                     data=token_data,
                     headers={"Content-Type": "application/x-www-form-urlencoded"},
                 ) as response,
