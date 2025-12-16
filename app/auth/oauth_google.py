@@ -1,4 +1,3 @@
-import logging
 import os
 import urllib.parse
 from http import HTTPStatus
@@ -8,21 +7,19 @@ import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.auth.utils import settings
 from settings.settings import get_settings
 
-logger = logging.getLogger(__name__)
 security = HTTPBearer()
 
 
 def generate_google_oauth_redirect_uri() -> str:
     settings = get_settings()
 
-    redirect_uri = "http://127.0.0.1:8001/login/google" if os.name == "nt" else "http://127.0.0.1:8000/login/google"
+    redirect_uri = settings.redirect_uri_local if os.name == "nt" else settings.redirect_uri_docker
 
-    logger.info("Using redirect_uri: %s", redirect_uri)
-    logger.info("Client ID: %s...", settings.OAUTH_GOOGLE_CLIENT_ID[:10])
     query_params = {
-        "client_id": settings.OAUTH_GOOGLE_CLIENT_ID,
+        "client_id": settings.oauth_google_client_id,
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
@@ -31,11 +28,9 @@ def generate_google_oauth_redirect_uri() -> str:
     }
 
     query_string = urllib.parse.urlencode(query_params)
-    base_url = "https://accounts.google.com/o/oauth2/v2/auth"
-    full_url = f"{base_url}?{query_string}"
+    base_url = settings.base_url_google
 
-    logger.info("Generated OAuth URL: %s...", full_url[:100])
-    return full_url
+    return f"{base_url}?{query_string}"
 
 
 async def verify_google_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
@@ -49,9 +44,7 @@ async def verify_google_token(credentials: HTTPAuthorizationCredentials = Depend
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://www.googleapis.com/oauth2/v3/tokeninfo", params={"access_token": token}
-            )
+            response = await client.get(settings.token_info_url, params={"access_token": token})
 
             if response.status_code != HTTPStatus.OK:
                 raise_invalid_token()
@@ -77,9 +70,7 @@ async def get_current_google_user(credentials: HTTPAuthorizationCredentials = De
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo", headers={"Authorization": f"Bearer {token}"}
-            )
+            response = await client.get(settings.user_info_url, headers={"Authorization": f"Bearer {token}"})
 
             if response.status_code != HTTPStatus.OK:
                 raise_invalid_token_error()
