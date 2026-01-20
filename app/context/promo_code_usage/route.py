@@ -1,0 +1,6 @@
+from fastapi import APIRouter
+
+from app.context.promo_code_usage.controllers import promo_code_usage_controller
+
+promo_code_usage_router = APIRouter()
+promo_code_usage_router.include_router(promo_code_usage_controller.router_promo_code_usage)
