@@ -25,6 +25,7 @@ def generate_google_oauth_redirect_uri() -> str:
         "scope": "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
         "access_type": "offline",
         "prompt": "consent",
+        "state": "profile",
     }
 
     query_string = urllib.parse.urlencode(query_params)
