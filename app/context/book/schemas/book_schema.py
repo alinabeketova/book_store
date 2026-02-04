@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from app.base.schemas.base_schema import Base, BaseResponse
@@ -82,3 +83,30 @@ class UpdatePartlyBookDTO(Base):
 
 class BookResponse(BaseResponse):
     pass
+
+
+class GetBookCard(Base):
+    id: int
+    title: str
+    description: str | None = None
+    unit_price: int
+    total_price: int | None = None
+    full_name: str
+
+
+class GetBook(Base):
+    id: int
+    isbn: str
+    title: str
+    description: str
+    publication_year: int
+    pages: int
+    price: int
+    discount: int
+    quantity_in_stock: int
+    min_quantity: int
+    create_date: datetime
+    publisher_name: str
+    publisher_email: str
+    author: str
+    genre: str
