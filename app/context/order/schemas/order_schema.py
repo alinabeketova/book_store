@@ -49,3 +49,15 @@ class UpdateOrderDTO(Base):
 
 class OrderResponse(BaseResponse):
     pass
+
+
+class UserOrderDTO(Base):
+    order_number: str
+    total_amount: Decimal
+    discount_amount: Decimal | None = None
+    final_amount: Decimal
+    delivery_address: str
+    note: str | None = None
+    create_date: datetime
+    update_date: datetime | None = None
+    name: str
