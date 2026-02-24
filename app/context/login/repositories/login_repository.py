@@ -9,11 +9,7 @@ class LoginRepository(BaseRepository[CreateLoginDTO, UpdateLoginDTO, LoginDTO]):
     dto = LoginDTO
     user_model = UserModel
 
-    async def get_user_id_by_email_and_password(self, data: LoginRequestDTO) -> int | None:
+    async def get_user_id_by_email_and_password(self, data: LoginRequestDTO) -> str | None:
         return (
-            await self._session.execute(
-                select(self.user_model.id)
-                .where(self.user_model.email == data.email)
-                .where(self.user_model.password == data.password)
-            )
+            await self._session.execute(select(self.user_model.password).where(self.user_model.email == data.email))
         ).scalar_one_or_none()
