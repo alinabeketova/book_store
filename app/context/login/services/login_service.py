@@ -8,7 +8,7 @@ from fastapi import HTTPException, Request
 
 from app.auth.oauth_google import generate_google_oauth_redirect_uri
 from app.auth.utils import create_access_token
-from app.base.utils.password_utils import get_hashed_password
+from app.base.utils.password_utils import verify_password
 from app.context.login.dependencies.repositories import ILoginRepository
 from app.context.login.schemas.login_schema import GoogleTokenResponse, LoginRequestDTO, LoginResponseDTO, LoginUriDTO
 from settings.settings import get_settings
@@ -19,13 +19,10 @@ class LoginService:
         self.repository = repository
 
     async def login(self: "LoginService", data: LoginRequestDTO) -> LoginResponseDTO:
-        hashed_password = get_hashed_password(data.password)
-        data = LoginRequestDTO(**data.model_dump(exclude={"password"}), password=hashed_password)
+        hashed_password = await self.repository.get_user_id_by_email_and_password(data)
 
-        user_id = await self.repository.get_user_id_by_email_and_password(data)
-
-        if not user_id:
-            HTTPException(status_code=404, detail="Неверный email или пароль")
+        if not verify_password(data.password, hashed_password):
+            raise HTTPException(status_code=404, detail="Неверный email или пароль")
 
         return LoginResponseDTO(token=create_access_token(data.email))
 

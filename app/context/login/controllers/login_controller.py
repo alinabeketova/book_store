@@ -8,6 +8,7 @@ from app.exception_handler import error_handler
 
 router_login = APIRouter(tags=["login"])
 logger = logging.getLogger(__name__)
+state_storage: set[int] = set()
 
 
 @router_login.post("/login", summary="Post login")
@@ -24,5 +25,5 @@ async def get_google_oauth_redirect_uri(service: ILoginService) -> LoginUriDTO:
 
 @router_login.get("/login/google")
 @error_handler
-async def get_google_callback(service: ILoginService, request: Request) -> GoogleTokenResponse:  # -> LoginUriDTO
+async def get_google_callback(service: ILoginService, request: Request) -> GoogleTokenResponse:
     return await service.get_google_callback(request=request)
