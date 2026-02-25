@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 
 from app.base.repositories.base_repository import BaseRepository
 from app.context.author.models.author_model import AuthorModel
@@ -32,29 +32,14 @@ class BookRepository(BaseRepository[CreateBookDTO, UpdateBookDTO | UpdatePartlyB
 
     async def get_book_in_order(self, order_number: str) -> list[GetBookCard]:
         return [
-            GetBookCard(**book)
+            GetBookCard(**dict(book))
             for book in (
-                (
-                    await self._session.execute(
-                        select(
-                            self.model.id,
-                            self.model.title,
-                            self.model.description,
-                            self.order_item.unit_price,
-                            self.order_item.total_price,
-                            self.author.full_name,
-                        )
-                        .select_from(self.order)
-                        .join(self.order_item, self.order.id == self.order_item.order_id)
-                        .join(self.model, self.model.id == self.order_item.book_id)
-                        .join(self.book_author, self.book_author.book_id == self.model.id)
-                        .join(self.author, self.author.id == self.book_author.author_id)
-                        .where(self.order.order_number == order_number)
-                    )
+                await self._session.execute(
+                    text("SELECT * FROM get_book(:order_number)"), {"order_number": order_number}
                 )
-                .mappings()
-                .all()
             )
+            .mappings()
+            .all()
         ]
 
     async def get_book(self) -> list[GetBookCard]:
