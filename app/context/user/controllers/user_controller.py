@@ -26,7 +26,7 @@ async def get_user(service: IUserService) -> list[UserDTO]:
     return await service.get_user()
 
 
-@router_user.post("/user", summary="Post user", dependencies=[Depends(JWTBearer())])
+@router_user.post("/user", summary="Post user")
 @error_handler
 async def post_user(service: IUserService, data: CreateUserDTO = Depends()) -> UserResponse:
     return await service.post_user(data=data)
@@ -54,3 +54,9 @@ async def update_partly_user(service: IUserService, data: UpdatePartlyUserDTO = 
 @error_handler
 async def get_user_by_count_role(service: IUserService, count: int) -> list[UserDTO]:
     return await service.get_user_by_count_role(count=count)
+
+
+@router_user.get("/user_email/{user_email:str}", summary="Get user by email", dependencies=[Depends(JWTBearer())])
+@error_handler
+async def get_user_by_email(service: IUserService, user_email: str) -> UserDTO:
+    return await service.get_user_by_email(user_email=user_email)
